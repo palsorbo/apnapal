@@ -1,0 +1,19 @@
+{
+  "name": "apnapal",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:fe": "npm run dev -w @apnapal/frontend",
+    "dev:be": "npm run dev -w @apnapal/backend",
+    "build:types": "npm run build -w @apnapal/types",
+    "build:utils": "npm run build -w @apnapal/utils",
+    "build:packages": "npm run build --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

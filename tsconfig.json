@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@apnapal/types": [
+        "packages/shared-types/src"
+      ],
+      "@apnapal/types/*": [
+        "packages/shared-types/src/*"
+      ],
+      "@apnapal/utils": [
+        "packages/utils/src"
+      ],
+      "@apnapal/utils/*": [
+        "packages/utils/src/*"
+      ]
+    },
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  }
+}
