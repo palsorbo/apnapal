@@ -1,4 +1,4 @@
-# Kirdar Backend API Documentation
+# ApnaPal Worker API Documentation
 
 ## Overview
 
@@ -9,40 +9,6 @@ This is a Cloudflare Workers backend for an AI character conversation platform. 
 ### Authentication
 
 All authenticated endpoints require an `x-user-id` header containing a valid UUID of the user.
-
-### Legacy Endpoints (Backward Compatibility)
-
-These endpoints maintain compatibility with the original in-memory system.
-
-#### `POST /legacy/chat`
-Legacy chat endpoint with in-memory storage.
-
-**Request Body:**
-```json
-{
-  "message": "Hello!",
-  "sessionId": "user-123",
-  "characterId": "character-uuid"
-}
-```
-
-**Response:**
-```json
-{
-  "reply": "Hello! How can I help you today?",
-  "sessionId": "user-123",
-  "characterId": "character-uuid",
-  "credits": 29,
-  "context": [],
-  "history": [],
-  "memory": {
-    "facts": [],
-    "extractedThisTurn": []
-  }
-}
-```
-
----
 
 ### Profile Endpoints
 

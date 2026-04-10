@@ -1,8 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 
-// Import routes
-import legacyRoutes from './routes/legacy';
 import profileRoutes from './routes/profile';
 import charactersRoutes from './routes/characters';
 import conversationsRoutes from './routes/conversations';
@@ -21,34 +19,9 @@ app.use('*', cors({
 // Root endpoint
 app.get('/', (c) => {
     return c.json({
-        message: 'Welcome to ApnaPal Worker API',
-        version: '1.0.0',
-        endpoints: {
-            legacy: {
-                chat: 'POST /legacy/chat (deprecated)'
-            },
-            profile: {
-                get: 'GET /profile',
-                update: 'PATCH /profile'
-            },
-            characters: {
-                list: 'GET /characters',
-                detail: 'GET /characters/:id'
-            },
-            conversations: {
-                list: 'GET /conversations',
-                create: 'POST /conversations (body: { character_id })',
-                get: 'GET /conversations/:id',
-                delete: 'DELETE /conversations/:id',
-                messages: 'GET /conversations/:id/messages'
-            },
-            messaging: {
-                send: 'POST /conversations/:id/messages (body: { content })'
-            },
-            health: {
-                check: 'GET /health'
-            }
-        }
+        name: 'apnapal-worker',
+        status: 'ok',
+        version: '1.0.0'
     });
 });
 
@@ -61,7 +34,6 @@ app.get('/health', (c) => {
 });
 
 // Register routes
-app.route('/legacy', legacyRoutes);
 app.route('/profile', profileRoutes);
 app.route('/characters', charactersRoutes);
 app.route('/conversations', conversationsRoutes);

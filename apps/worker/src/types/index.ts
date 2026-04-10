@@ -54,33 +54,3 @@ export interface CreditTransaction {
     metadata: Record<string, any> | null;
     created_at: string;
 }
-
-// Legacy in-memory storage types (for backward compatibility)
-export interface LegacySession {
-    id: string;
-    created_at: number;
-    credits: number;
-}
-
-export interface LegacyMessage {
-    role: string;
-    content: string;
-    created_at: number;
-}
-
-export interface LegacyUserCharacterMemory {
-    userId: string;
-    characterId: string;
-    facts: string[];
-    updatedAt: number;
-}
-
-// Claude API response types
-export interface ClaudeMessage {
-    type: string;
-    text: string;
-}
-
-export interface ClaudeResponse {
-    content: ClaudeMessage[];
-}
