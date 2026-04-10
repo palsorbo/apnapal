@@ -10,6 +10,8 @@
     "dev:fe": "npm run dev -w @apnapal/frontend",
     "dev:be": "npm run dev -w @apnapal/backend",
     "dev:worker": "npm run dev -w @apnapal/worker",
+    "build:fe": "npm run build -w @apnapal/frontend",
+    "typecheck:fe": "npm run typecheck -w @apnapal/frontend",
     "deploy:worker": "npm run deploy -w @apnapal/worker",
     "typecheck:worker": "npm run typecheck -w @apnapal/worker",
     "build:types": "npm run build -w @apnapal/types",
