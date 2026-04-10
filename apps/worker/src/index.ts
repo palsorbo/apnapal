@@ -22,7 +22,7 @@ app.use('*', cors({
 app.get('/', (c) => {
     return c.json({
         message: 'Welcome to ApnaPal Worker API',
-        version: '2.1.0',
+        version: '1.0.0',
         endpoints: {
             legacy: {
                 chat: 'POST /legacy/chat (deprecated)'
