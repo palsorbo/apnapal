@@ -1,0 +1,4 @@
+name = "apnapal-worker"
+main = "src/index.ts"
+compatibility_date = "2026-04-10"
+compatibility_flags = ["nodejs_compat"]
