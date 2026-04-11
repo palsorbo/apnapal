@@ -10,3 +10,7 @@ invocation_logs = true
 
 [observability.traces]
 enabled = false
+
+[vars]
+SUPABASE_URL = "https://usqxntcnfkjbzhvaerfi.supabase.co"
+
