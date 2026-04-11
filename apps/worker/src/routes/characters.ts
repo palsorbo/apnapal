@@ -36,6 +36,7 @@ app.get('/', async (c) => {
 });
 
 // GET /characters/:id - Get single character details
+// if we want to show idv character details
 app.get('/:id', async (c) => {
     try {
         const env = c.env as Env;
