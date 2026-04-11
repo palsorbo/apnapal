@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import SiteHeader from "./components/site-header";
 import "./styles.css";
 
 export const metadata: Metadata = {
@@ -19,16 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <header className="site-header">
-          <Link className="brand" href="/" aria-label="ApnaPal home">
-            ApnaPal
-          </Link>
-          <nav className="nav" aria-label="Main navigation">
-            <Link href="/characters/">Characters</Link>
-            <Link href="/chat/">Chat</Link>
-            <Link href="/login/">Login</Link>
-          </nav>
-        </header>
+        <SiteHeader />
         {children}
         <footer className="site-footer">
           <span>ApnaPal</span>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { getSupabaseBrowserClient } from "../lib/supabase-browser";
 
 type AuthState = "checking" | "signed-out" | "signed-in";
 
@@ -9,11 +10,49 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8787";
 
 export default function ChatShell() {
   const [authState, setAuthState] = useState<AuthState>("checking");
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = window.localStorage.getItem("apnapal.authToken");
-    setAuthState(token ? "signed-in" : "signed-out");
+    const supabase = getSupabaseBrowserClient();
+
+    if (!supabase) {
+      setAuthState("signed-out");
+      setEmail(null);
+      return;
+    }
+
+    const client = supabase;
+
+    async function loadSession() {
+      const {
+        data: { session }
+      } = await client.auth.getSession();
+
+      setAuthState(session ? "signed-in" : "signed-out");
+      setEmail(session?.user.email ?? null);
+    }
+
+    void loadSession();
+
+    const {
+      data: { subscription }
+    } = client.auth.onAuthStateChange((_event, session) => {
+      setAuthState(session ? "signed-in" : "signed-out");
+      setEmail(session?.user.email ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
+
+  async function handleSignOut() {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      return;
+    }
+    await supabase.auth.signOut();
+  }
 
   if (authState === "checking") {
     return (
@@ -60,8 +99,14 @@ export default function ChatShell() {
           <div>
             <p className="eyebrow">Asha</p>
             <h1>Daily check-in</h1>
+            <p className="muted">{email ?? "Signed in"}</p>
           </div>
-          <span className="api-pill">API: {apiUrl}</span>
+          <div className="chat-header-actions">
+            <span className="api-pill">API: {apiUrl}</span>
+            <button className="button secondary" type="button" onClick={handleSignOut}>
+              Sign out
+            </button>
+          </div>
         </div>
         <div className="messages">
           <p className="message assistant">Welcome back. What should we make lighter today?</p>

@@ -83,8 +83,18 @@ input {
   font-weight: 650;
 }
 
+.nav-button {
+  padding: 0;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font-weight: 650;
+}
+
 .nav a:hover,
-.site-footer a:hover {
+.site-footer a:hover,
+.nav-button:hover {
   color: var(--brand-dark);
 }
 
@@ -311,6 +321,19 @@ input {
   color: var(--muted);
 }
 
+.status {
+  margin: 4px 0 0;
+  font-weight: 700;
+}
+
+.status.success {
+  color: var(--brand-dark);
+}
+
+.status.error {
+  color: #b53434;
+}
+
 .chat-layout {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
@@ -365,6 +388,14 @@ input {
   gap: 16px;
   padding: 18px;
   border-bottom: 1px solid var(--line);
+}
+
+.chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .chat-header h1 {
