@@ -1,3 +1,5 @@
+// app/characters/page.tsx
+
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -6,45 +8,27 @@ export const metadata: Metadata = {
   description: "Meet ApnaPal characters for reflection, focus, and creative conversation."
 };
 
-const characters = [
-  {
-    name: "Asha",
-    description: "A steady companion for check-ins, routines, and kind accountability.",
-    tone: "Warm and practical"
-  },
-  {
-    name: "Kabir",
-    description: "A creative partner for story ideas, prompts, and playful momentum.",
-    tone: "Curious and vivid"
-  },
-  {
-    name: "Mira",
-    description: "A calm guide for decisions, next steps, and quiet focus.",
-    tone: "Grounded and clear"
-  }
-];
+export const revalidate = 60; // optional (ISR)
 
-export default function CharactersPage() {
+export default async function CharactersPage() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/characters`);
+  const characters = await res.json();
+
   return (
     <main className="page">
       <section className="section compact">
         <div className="section-heading">
           <p className="eyebrow">Characters</p>
           <h1>Find a conversation style that fits the moment.</h1>
-          <p>
-            Each ApnaPal character is designed around a different kind of support,
-            from daily reflection to creative exploration.
-          </p>
         </div>
+
         <div className="card-grid">
-          {characters.map((character) => (
+          {characters.map((character: any) => (
             <article className="card" key={character.name}>
               <h2>{character.name}</h2>
               <p className="card-role">{character.tone}</p>
               <p>{character.description}</p>
-              <Link className="text-link" href="/chat/">
-                Start chatting
-              </Link>
+              <Link href="/chat/">Start chatting</Link>
             </article>
           ))}
         </div>
