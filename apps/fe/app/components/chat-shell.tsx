@@ -23,13 +23,29 @@ export default function ChatShell() {
 
     const client = supabase;
 
-    async function loadSession() {
-      const {
-        data: { session }
-      } = await client.auth.getSession();
+    // Fail-safe timeout: if auth check hangs for more than 1.5s, treat as signed out
+    const authTimeout = setTimeout(() => {
+      setAuthState(currentState => {
+        if (currentState === "checking") {
+          return "signed-out";
+        }
+        return currentState;
+      });
+    }, 1500);
 
-      setAuthState(session ? "signed-in" : "signed-out");
-      setEmail(session?.user.email ?? null);
+    async function loadSession() {
+      try {
+        const {
+          data: { session }
+        } = await client.auth.getSession();
+
+        setAuthState(session ? "signed-in" : "signed-out");
+        setEmail(session?.user.email ?? null);
+      } catch (error) {
+        // On any auth error, safely fall back to signed out state
+        setAuthState("signed-out");
+        setEmail(null);
+      }
     }
 
     void loadSession();
@@ -37,11 +53,13 @@ export default function ChatShell() {
     const {
       data: { subscription }
     } = client.auth.onAuthStateChange((_event, session) => {
+      clearTimeout(authTimeout);
       setAuthState(session ? "signed-in" : "signed-out");
       setEmail(session?.user.email ?? null);
     });
 
     return () => {
+      clearTimeout(authTimeout);
       subscription.unsubscribe();
     };
   }, []);
