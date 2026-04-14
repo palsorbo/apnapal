@@ -5,6 +5,8 @@ import profileRoutes from './routes/profile';
 import charactersRoutes from './routes/characters';
 import conversationsRoutes from './routes/conversations';
 import messagingRoutes from './routes/messaging';
+import creditsRoutes from './routes/credits';
+import webhooksRoutes from './routes/webhooks';
 
 // Initialize app
 const app = new Hono();
@@ -38,6 +40,8 @@ app.route('/profile', profileRoutes);
 app.route('/characters', charactersRoutes);
 app.route('/conversations', conversationsRoutes);
 app.route('/conversations', messagingRoutes);
+app.route('/credits', creditsRoutes);
+app.route('/webhooks', webhooksRoutes);
 
 // Error handler
 app.onError((err, c) => {

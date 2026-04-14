@@ -13,7 +13,7 @@ app.get('/', async (c) => {
 
         let query = supabase
             .from('characters')
-            .select('*')
+            .select('id, name, persona_type, description, avatar_url, voice_id, is_active, version, created_at, updated_at')
             .eq('is_active', true)
             .order('created_at', { ascending: false });
 
@@ -51,7 +51,7 @@ app.get('/:id', async (c) => {
 
         const { data, error } = await supabase
             .from('characters')
-            .select('*')
+            .select('id, name, persona_type, description, avatar_url, voice_id, is_active, version, created_at, updated_at')
             .eq('id', characterId)
             .single();
 

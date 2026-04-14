@@ -7,6 +7,10 @@ import { generateChatReply } from '../services/llm';
 const app = new Hono<{ Variables: { userId: string } }>();
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+const BASE_TEMPLATE = `You are a companion connecting with a user on a mobile chat app. You must strictly adopt the persona and identity provided below.
+Never break character. Never refer to yourself as an AI assistant program.
+Keep your responses concise, natural, and engaging. Adopt the tone, language context, and cultural nuances specific to your character.`;
+
 function errorResponse(c: any, status: number, code: string, message: string, extra: Record<string, unknown> = {}) {
     return c.json({ error: { code, message, ...extra } }, status);
 }
@@ -104,35 +108,34 @@ app.post('/:conversationId/messages', authMiddleware, async (c) => {
             });
         }
 
-        // Get conversation context (last 5 messages)
-        const { data: recentMessages, error: recentMessagesError } = await supabase
+        // Get conversation context (last 10 messages)
+        const { data: recentMessages, error: recentMessagesError, count } = await supabase
             .from('messages')
-            .select('role, content')
+            .select('role, content', { count: 'exact' })
             .eq('conversation_id', conversationId)
             .order('created_at', { ascending: false })
-            .limit(5);
+            .limit(10);
 
         if (recentMessagesError) {
             throw recentMessagesError;
         }
 
         // Get user memory for this character
-        // const { data: memoryData, error: memoryError } = await supabase
-        //     .from('user_character_memory')
-        //     .select('memory')
-        //     .eq('user_id', userId)
-        //     .eq('character_id', conversation.character_id)
-        //     .single();
+        const { data: memoryData, error: memoryError } = await supabase
+            .from('user_character_memory')
+            .select('memory')
+            .eq('user_id', userId)
+            .eq('character_id', conversation.character_id)
+            .single();
 
-        // if (memoryError && memoryError.code !== 'PGRST116') {
-        //     throw memoryError;
-        // }
+        if (memoryError && memoryError.code !== 'PGRST116') {
+            throw memoryError;
+        }
 
-        // Build system prompt with character's system_prompt and user facts
-        // const userFacts = memoryData?.memory?.facts || [];
-        // const systemPromptWithFacts = userFacts.length > 0
-        //     ? `${conversation.characters.system_prompt}\n\nUser Facts (remember these):\n${userFacts.map((f: string) => `- ${f}`).join('\n')}`
-        //     : conversation.characters.system_prompt;
+        const userFacts = memoryData?.memory?.facts || [];
+        const factsSection = userFacts.length > 0
+            ? `\n\n=== USER LONG-TERM FACTS (REMEMBER THESE) ===\n${userFacts.map((f: string) => `- ${f}`).join('\n')}`
+            : '';
 
         // Prepare messages for Claude API
 
@@ -141,16 +144,29 @@ app.post('/:conversationId/messages', authMiddleware, async (c) => {
             .map(m => ({ role: m.role, content: m.content }));
         messagesForLlm.push({ role: 'user', content });
 
+        const fullSystemPrompt = `${BASE_TEMPLATE}\n\nYou must return your response STRICTLY as a JSON object with the following schema:\n{\n  "reply": "Your character response to the user",\n  "state": "A 1-2 sentence summary of the current conversation mood and topics discussed"\n}\nDo not include any formatting, markdown, or text outside the JSON object.\n\n=== CHARACTER PROFILE ===\n${conversation.characters.system_prompt}${factsSection}\n\n=== CURRENT CONVERSATION STATE ===\n${JSON.stringify(conversation.memory || {})}`;
+
         // Call the LLM before the DB transaction.
-        let assistantResponse: string;
+        let assistantResponse: string = '';
+        let parsedState: any;
         try {
-            assistantResponse = await generateChatReply({
+            const rawResponse = await generateChatReply({
                 env,
-                systemPrompt: conversation.characters.system_prompt,
+                systemPrompt: fullSystemPrompt,
                 messages: messagesForLlm,
-                maxTokens: 150,
+                maxTokens: 300,
                 timeoutMs: 15000
             });
+
+            try {
+                const jsonStr = rawResponse.replace(/```json\n?|\n?```/gi, '').trim();
+                const parsed = JSON.parse(jsonStr);
+                assistantResponse = parsed.reply || rawResponse;
+                parsedState = parsed.state || conversation.memory;
+            } catch (e) {
+                assistantResponse = rawResponse;
+                parsedState = conversation.memory;
+            }
         } catch (error) {
             console.error('Error calling LLM provider:', {
                 userId,
@@ -181,6 +197,64 @@ app.post('/:conversationId/messages', authMiddleware, async (c) => {
         }
 
         const result = processResult?.[0];
+
+        if (result?.success) {
+            c.executionCtx.waitUntil(
+                supabase.from('conversations')
+                    .update({ memory: parsedState })
+                    .eq('id', conversationId)
+                    .then()
+            );
+
+            const totalMessagesAfterTurn = (count || 0) + 2;
+            if (totalMessagesAfterTurn > 0 && totalMessagesAfterTurn % 10 === 0) {
+                c.executionCtx.waitUntil(
+                    (async () => {
+                        try {
+                            const extractionPrompt = `You are a memory extraction AI.
+Analyze the conversation transcript and the existing list of facts about the user.
+Extract a distilled list of long-term facts about the user (e.g. name, preferences, personal details).
+- Retain valid old facts.
+- Incorporate new facts.
+- Remove invalid/contradicted facts.
+- Maximum 15 facts.
+Output STRICTLY a JSON array of strings: ["fact 1", "fact 2"]. Do not add any formatting.`;
+
+                            const transcript = [...messagesForLlm, { role: 'assistant', content: assistantResponse }]
+                                .map(m => `${m.role.toUpperCase()}: ${m.content}`)
+                                .join('\n');
+
+                            const extractionMessage = `Existing Facts: ${JSON.stringify(userFacts)}\n\nTranscript:\n${transcript}`;
+
+                            const rawExtraction = await generateChatReply({
+                                env,
+                                systemPrompt: extractionPrompt,
+                                messages: [{ role: 'user', content: extractionMessage }],
+                                maxTokens: 300,
+                                timeoutMs: 15000
+                            });
+
+                            const extJsonStr = rawExtraction.replace(/```json\n?|\n?```/gi, '').trim();
+                            const newFactsJSON = JSON.parse(extJsonStr);
+
+                            if (Array.isArray(newFactsJSON) && newFactsJSON.length > 0) {
+                                const limitedFacts = newFactsJSON.slice(0, 15);
+                                await supabase
+                                    .from('user_character_memory')
+                                    .upsert({
+                                        user_id: userId,
+                                        character_id: conversation.character_id,
+                                        memory: { facts: limitedFacts },
+                                        updated_at: new Date().toISOString()
+                                    }, { onConflict: 'user_id, character_id' });
+                            }
+                        } catch (extError) {
+                            console.error('LTM Extraction Error:', extError);
+                        }
+                    })()
+                );
+            }
+        }
 
         if (!result?.success) {
             if (result?.error_code === 'insufficient_credits') {

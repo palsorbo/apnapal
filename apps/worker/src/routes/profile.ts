@@ -38,21 +38,40 @@ app.patch('/', authMiddleware, async (c) => {
         const env = c.env as Env;
         const userId = c.get('userId');
         const body = await c.req.json();
-        const { name } = body;
+        const { name, preferred_language } = body;
         const supabase = getSupabaseClient(env);
 
-        // Validate input
-        if (!name || typeof name !== 'string') {
-            return c.json({ error: 'Name is required and must be a string' }, 400);
+        const updates: Record<string, string> = {};
+
+        // Validate name if provided
+        if (name !== undefined) {
+            if (typeof name !== 'string') {
+                return c.json({ error: 'Name must be a string' }, 400);
+            }
+            if (name.length > 100) {
+                return c.json({ error: 'Name must be 100 characters or less' }, 400);
+            }
+            updates.name = name;
         }
 
-        if (name.length > 100) {
-            return c.json({ error: 'Name must be 100 characters or less' }, 400);
+        // Validate preferred_language if provided
+        if (preferred_language !== undefined) {
+            if (typeof preferred_language !== 'string') {
+                return c.json({ error: 'Preferred language must be a string' }, 400);
+            }
+            if (preferred_language.length > 50) {
+                return c.json({ error: 'Preferred language must be 50 characters or less' }, 400);
+            }
+            updates.preferred_language = preferred_language;
+        }
+
+        if (Object.keys(updates).length === 0) {
+            return c.json({ error: 'No valid fields provided for update' }, 400);
         }
 
         const { data, error } = await supabase
             .from('profiles')
-            .update({ name })
+            .update(updates)
             .eq('id', userId)
             .select()
             .single();

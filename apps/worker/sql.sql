@@ -4,6 +4,7 @@
 CREATE TABLE profiles (
     id              UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     name            VARCHAR(100), -- should not it be first name and last name
+    preferred_language VARCHAR(50),
     created_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -147,43 +148,40 @@ CREATE TRIGGER on_message_inserted
 --     RETURN TRUE;
 -- END;
 -- $$ LANGUAGE plpgsql;
+-- recharge credits atomically and record the transaction
+CREATE OR REPLACE FUNCTION recharge_credits(
+    p_user_id      UUID,
+    p_amount       INT,
+    p_type         VARCHAR,
+    p_metadata     JSONB DEFAULT NULL
+) RETURNS BOOLEAN AS $$
+DECLARE
+    current_balance INT;
+BEGIN
+    IF p_amount <= 0 THEN
+        RAISE EXCEPTION 'Recharge amount must be greater than zero';
+    END IF;
 
+    SELECT c.balance INTO current_balance
+    FROM public.credits
+    AS c
+    WHERE c.user_id = p_user_id
+    FOR UPDATE;
 
--- refund credits atomically and record the refund transaction
--- CREATE OR REPLACE FUNCTION refund_credits(
---     p_user_id      UUID,
---     p_amount       INT,
---     p_type         VARCHAR,
---     p_reference_id UUID,
---     p_metadata     JSONB DEFAULT NULL
--- ) RETURNS BOOLEAN AS $$
--- DECLARE
---     current_balance INT;
--- BEGIN
---     IF p_amount <= 0 THEN
---         RAISE EXCEPTION 'Refund amount must be greater than zero';
---     END IF;
+    IF current_balance IS NULL THEN
+        RETURN FALSE;
+    END IF;
 
---     SELECT c.balance INTO current_balance
---     FROM public.credits
---     AS c
---     WHERE c.user_id = p_user_id
---     FOR UPDATE;
+    UPDATE public.credits
+    SET balance = balance + p_amount
+    WHERE user_id = p_user_id;
 
---     IF current_balance IS NULL THEN
---         RETURN FALSE;
---     END IF;
+    INSERT INTO public.credit_transactions (user_id, amount, type, reference_id, metadata)
+    VALUES (p_user_id, p_amount, p_type, NULL, p_metadata);
 
---     UPDATE public.credits
---     SET balance = balance + p_amount
---     WHERE user_id = p_user_id;
-
---     INSERT INTO public.credit_transactions (user_id, amount, type, reference_id, metadata)
---     VALUES (p_user_id, p_amount, p_type, p_reference_id, p_metadata);
-
---     RETURN TRUE;
--- END;
--- $$ LANGUAGE plpgsql;
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
 
 
 -- atomically spend credits and persist both messages

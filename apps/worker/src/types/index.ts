@@ -3,6 +3,9 @@ export interface Env {
     ANTHROPIC_API_KEY: string;
     SUPABASE_URL: string;
     SUPABASE_SERVICE_ROLE_KEY: string;
+    RAZORPAY_KEY_ID: string;
+    RAZORPAY_KEY_SECRET: string;
+    RAZORPAY_WEBHOOK_SECRET: string;
 }
 
 // Database types matching the SQL schema

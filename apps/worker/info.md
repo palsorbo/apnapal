@@ -331,6 +331,6 @@ Required environment variables:
    - Voice messages cost 2 credits
    - New users receive 20 free credits on signup
 
-4. **Memory Management**: The system automatically extracts factual information about users from conversations every 5 messages and stores it in `user_character_memory`.
+4. **Memory Management**: The system automatically extracts factual information about users from conversations every 10 messages and stores it in `user_character_memory`.
 
 5. **AI Integration**: All messaging endpoints use Claude API (claude-3-haiku) for generating responses, with character-specific system prompts and user memory context.
