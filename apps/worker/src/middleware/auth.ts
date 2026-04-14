@@ -1,20 +1,24 @@
 import { Context } from 'hono';
+import { getSupabaseClient } from '../services/supabase';
 
 export async function authMiddleware(c: Context, next: Function) {
-    const userId = c.req.header('x-user-id') as string | undefined;
+    const authHeader = c.req.header('Authorization');
 
-    if (!userId) {
-        return c.json({ error: 'Missing user authentication. Provide x-user-id header.' }, 401);
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return c.json({ error: 'Missing user authentication. Provide Authorization: Bearer token header.' }, 401);
     }
 
-    // Validate UUID format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(userId)) {
-        return c.json({ error: 'Invalid user ID format. Must be a valid UUID.' }, 400);
+    const token = authHeader.substring(7); // Remove 'Bearer '
+    const supabase = getSupabaseClient(c.env as any);
+
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+
+    if (error || !user) {
+        return c.json({ error: 'Invalid token or session expired.' }, 401);
     }
 
     // Attach user ID to context
-    c.set('userId', userId);
+    c.set('userId', user.id);
 
     await next();
 }

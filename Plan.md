@@ -13,17 +13,17 @@
 ## Phase 1 — Foundation
 
 ### 1.1 Database
-- [ ] run full SQL schema in Supabase
-- [ ] verify all tables, indexes, triggers exist
-- [ ] seed 2–3 characters (Priya GF, Arjun BF, Dadi)
-- [ ] write system prompts for each character in DB
-- [ ] test handle_new_user trigger creates profile + credits row
+- [x] run full SQL schema in Supabase
+- [x] verify all tables, indexes, triggers exist
+- [x] seed 2–3 characters (Priya GF, Arjun BF, Dadi)
+- [x] write system prompts for each character in DB
+- [x] test handle_new_user trigger creates profile + credits row
 
 ### 1.2 Auth
-- [ ] enable Email OTP in Supabase dashboard
-- [ ] test OTP send + verify flow end to end
-- [ ] protect all API routes with Supabase JWT verification
-- [ ] confirm user_id flows correctly into all DB writes
+- [x] enable Email OTP in Supabase dashboard
+- [x] test OTP send + verify flow end to end
+- [x] protect all API routes with Supabase JWT verification
+- [x] confirm user_id flows correctly into all DB writes
 
 ---
 
