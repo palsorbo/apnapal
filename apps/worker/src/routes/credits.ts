@@ -36,7 +36,7 @@ app.get('/transactions', authMiddleware, async (c) => {
         const env = c.env as Env;
         const userId = c.get('userId');
         const supabase = getSupabaseClient(env);
-        
+
         let limit = Number.parseInt(c.req.query('limit') || '20', 10);
         if (isNaN(limit) || limit < 1) limit = 20;
 
@@ -59,13 +59,13 @@ app.post('/recharge', authMiddleware, async (c) => {
     try {
         const env = c.env as Env;
         const userId = c.get('userId');
-        
+
         if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET) {
             return c.json({ error: 'Payment gateway not configured' }, 503);
         }
 
         const body = await c.req.json();
-        const { planId } = body; 
+        const { planId } = body;
 
         // Hardcode a simple plan structure for MVP
         const plans: Record<string, { credits: number; priceInPaise: number }> = {
@@ -87,7 +87,7 @@ app.post('/recharge', authMiddleware, async (c) => {
             body: JSON.stringify({
                 amount: plan.priceInPaise,
                 currency: 'INR',
-                receipt: `rcpt_${userId}_${Date.now()}`
+                receipt: `rcpt_${Date.now()}_${crypto.randomUUID().slice(0, 6)}`
             })
         });
 
@@ -131,9 +131,9 @@ app.post('/recharge/verify', authMiddleware, async (c) => {
         const env = c.env as Env;
         const userId = c.get('userId');
         const supabase = getSupabaseClient(env);
-        
+
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature, credits } = await c.req.json();
-        
+
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !credits) {
             return c.json({ error: 'Missing required parameters' }, 400);
         }
@@ -155,10 +155,10 @@ app.post('/recharge/verify', authMiddleware, async (c) => {
 
         if (error) {
             if (error.code === '23505') {
-                 // Might error on collision, or if we had a unique constraint on metadata
-                 console.error('Double spend prevention / duplicate insert:', error);
+                // Might error on collision, or if we had a unique constraint on metadata
+                console.error('Double spend prevention / duplicate insert:', error);
             } else {
-                 throw error;
+                throw error;
             }
         }
 

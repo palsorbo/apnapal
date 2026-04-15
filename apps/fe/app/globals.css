@@ -1,0 +1,84 @@
+
+
+:root {
+  /* Core Palette */
+  --color-saffron: #E8610A;
+  --color-saffron-light: #FDF0E8;
+  --color-saffron-mid: #F4A66A;
+  --color-marigold: #F0B429;
+  --color-marigold-light: #FFFBE8;
+  --color-rose: #C2355F;
+  --color-rose-light: #FBEAEF;
+  --color-indigo: #2B2D91;
+  --color-indigo-light: #EAEBF8;
+  --color-jade: #1A7A5E;
+  --color-jade-light: #E8F5F1;
+
+  /* Neutral Palette */
+  --color-cream: #FAF7F2;
+  --color-cream-dark: #F2EDE5;
+  --color-surface: #FFFFFF;
+  --color-ink: #1C1614;
+  --color-ink-mid: #4A3F3A;
+  --color-ink-soft: #8A7E78;
+  --color-ink-faint: #D4CBC4;
+  --color-overlay: rgba(28, 22, 20, 0.48);
+
+  /* Semantic Colors */
+  --color-success: var(--color-jade);
+  --color-warning: var(--color-marigold);
+  --color-error: var(--color-rose);
+  --color-info: var(--color-indigo);
+
+  /* Typography Sizes */
+  --text-display: 32px;
+  --text-title-lg: 24px;
+  --text-title: 20px;
+  --text-body-lg: 17px;
+  --text-body: 15px;
+  --text-caption: 13px;
+  --text-micro: 11px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-cream: #18120F;
+    --color-cream-dark: #231A16;
+    --color-surface: #2C1F1A;
+    --color-ink: #F5EFE9;
+    --color-ink-mid: #B8ADA6;
+    --color-ink-soft: #7A6F69;
+    --color-ink-faint: #3D3330;
+  }
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  font-family: 'Sora', system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Animations */
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(232, 97, 10, 0.4); }
+  70%  { box-shadow: 0 0 0 14px rgba(232, 97, 10, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(232, 97, 10, 0); }
+}
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-4px); }
+}
+
+/* Utilities */
+.font-fraunces {
+  font-family: 'Fraunces', Georgia, serif;
+}

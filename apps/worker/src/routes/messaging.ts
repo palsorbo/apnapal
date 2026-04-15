@@ -37,6 +37,16 @@ function validateMessageBody(body: unknown): MessageBodyValidation {
     return { content };
 }
 
+function parseLlmResponse(raw: string): { reply: string; state: string } {
+    const replyMatch = raw.match(/REPLY:\s*([\s\S]*?)(?=\n\s*STATE:|$)/i);
+    const stateMatch = raw.match(/STATE:\s*([\s\S]*?)$/i);
+
+    return {
+        reply: replyMatch?.[1]?.trim() ?? raw,
+        state: stateMatch?.[1]?.trim() ?? ""
+    };
+}
+
 app.post('/:conversationId/messages', authMiddleware, async (c) => {
     try {
         const env = c.env as Env;
@@ -144,7 +154,20 @@ app.post('/:conversationId/messages', authMiddleware, async (c) => {
             .map(m => ({ role: m.role, content: m.content }));
         messagesForLlm.push({ role: 'user', content });
 
-        const fullSystemPrompt = `${BASE_TEMPLATE}\n\nYou must return your response STRICTLY as a JSON object with the following schema:\n{\n  "reply": "Your character response to the user",\n  "state": "A 1-2 sentence summary of the current conversation mood and topics discussed"\n}\nDo not include any formatting, markdown, or text outside the JSON object.\n\n=== CHARACTER PROFILE ===\n${conversation.characters.system_prompt}${factsSection}\n\n=== CURRENT CONVERSATION STATE ===\n${JSON.stringify(conversation.memory || {})}`;
+        const fullSystemPrompt = `${BASE_TEMPLATE}
+        Do not include any formatting, markdown, or text outside the specified format.\n\n=== CHARACTER PROFILE ===\n${conversation.characters.system_prompt}${factsSection}\n\n=== CURRENT CONVERSATION STATE ===\n${JSON.stringify(conversation.memory || {})}
+
+        You must return your response STRICTLY in the following format:
+        REPLY:
+        (Your character response to the user)
+
+        STATE:
+        (A 1-2 sentence summary of the current conversation mood and topics discussed)
+        `;
+
+        // console.log("fullSystemPrompt", fullSystemPrompt)
+        // return
+
 
         // Call the LLM before the DB transaction.
         let assistantResponse: string = '';
@@ -154,19 +177,13 @@ app.post('/:conversationId/messages', authMiddleware, async (c) => {
                 env,
                 systemPrompt: fullSystemPrompt,
                 messages: messagesForLlm,
-                maxTokens: 300,
+                maxTokens: 100,
                 timeoutMs: 15000
             });
-
-            try {
-                const jsonStr = rawResponse.replace(/```json\n?|\n?```/gi, '').trim();
-                const parsed = JSON.parse(jsonStr);
-                assistantResponse = parsed.reply || rawResponse;
-                parsedState = parsed.state || conversation.memory;
-            } catch (e) {
-                assistantResponse = rawResponse;
-                parsedState = conversation.memory;
-            }
+            console.log("raw resonse", rawResponse)
+            const parsed = parseLlmResponse(rawResponse);
+            assistantResponse = parsed.reply;
+            parsedState = parsed.state || conversation.memory;
         } catch (error) {
             console.error('Error calling LLM provider:', {
                 userId,
@@ -200,10 +217,12 @@ app.post('/:conversationId/messages', authMiddleware, async (c) => {
 
         if (result?.success) {
             c.executionCtx.waitUntil(
-                supabase.from('conversations')
-                    .update({ memory: parsedState })
-                    .eq('id', conversationId)
-                    .then()
+                Promise.resolve(
+                    supabase.from('conversations')
+                        .update({ memory: parsedState })
+                        .eq('id', conversationId)
+                        .then()
+                )
             );
 
             const totalMessagesAfterTurn = (count || 0) + 2;
@@ -230,7 +249,7 @@ Output STRICTLY a JSON array of strings: ["fact 1", "fact 2"]. Do not add any fo
                                 env,
                                 systemPrompt: extractionPrompt,
                                 messages: [{ role: 'user', content: extractionMessage }],
-                                maxTokens: 300,
+                                maxTokens: 500,
                                 timeoutMs: 15000
                             });
 

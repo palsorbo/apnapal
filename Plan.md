@@ -91,36 +91,36 @@
 ## Phase 4 — Frontend (Next.js 16, mobile first)
 
 ### 4.1 Onboarding
-- [ ] splash screen
-- [ ] email id entry
-- [ ] OTP verify (auto-submit on 6th digit)
+- [x] splash screen
+- [x] email id entry
+- [x] OTP verify (auto-submit on 6th digit)
 
 ### 4.2 Home
-- [ ] character cards grid (2 column)
-- [ ] filter by language
-- [ ] tap → character profile
+- [x] character cards grid (2 column)
+- [x] filter by language
+- [x] tap → character profile
 
 ### 4.3 Character profile
-- [ ] avatar, name, description
-- [ ] sticky CTA at bottom
+- [x] avatar, name, description
+- [x] sticky CTA at bottom
 
 ### 4.4 Chat screen
-- [ ] message bubbles
-- [ ] character avatar + name in header
-- [ ] credit balance in header
-- [ ] typing indicator
-- [ ] text input + send
-- [ ] handle 402 → recharge bottom sheet
+- [x] message bubbles
+- [x] character avatar + name in header
+- [x] credit balance in header
+- [x] typing indicator
+- [x] text input + send
+- [x] handle 402 → recharge bottom sheet
 
 ### 4.5 Credits
-- [ ] balance screen
-- [ ] transaction history
-- [ ] recharge bottom sheet (₹49 / ₹99 / ₹199)
-- [ ] Razorpay integration
+- [x] balance screen
+- [x] transaction history
+- [x] recharge bottom sheet (₹49 / ₹99 / ₹199)
+- [x] Razorpay integration
 
 ### 4.6 Profile
-- [ ] name edit
-- [ ] preferred language selector
+- [x] name edit
+- [x] preferred language selector
 
 ---
 

@@ -1,65 +1,240 @@
-import Link from "next/link";
+"use client";
 
-const characters = [
-  {
-    name: "Asha",
-    role: "Daily check-ins",
-    note: "Gentle conversation for routines, reflection, and small resets."
-  },
-  {
-    name: "Kabir",
-    role: "Creative spark",
-    note: "Story prompts, playful ideas, and momentum when the page feels quiet."
-  },
-  {
-    name: "Mira",
-    role: "Calm focus",
-    note: "Short, grounded chats that help you choose the next useful step."
-  }
-];
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../components/AuthProvider";
+import { api } from "../lib/api";
+import { Character, Credits } from "@apnapal/types";
+import { CharacterCard } from "../components/CharacterCard";
+import { TimeGreeting } from "../components/TimeGreeting";
 
-export default function HomePage() {
+export default function Home() {
+  const router = useRouter();
+  const { user } = useAuth();
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [credits, setCredits] = useState<Credits | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("");
+
+  useEffect(() => {
+    fetchData();
+  }, [selectedLanguage]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [charactersData, creditsData] = await Promise.all([
+        api.getCharacters(selectedLanguage || undefined),
+        api.getCredits()
+      ]);
+      setCharacters(charactersData);
+      setCredits(creditsData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLanguageChange = (lang: string) => {
+    setSelectedLanguage(lang === selectedLanguage ? "" : lang);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   return (
-    <main>
-      <section className="hero">
-        <div className="hero-copy">
-          <p className="eyebrow">Private AI companions</p>
-          <h1>Conversations that feel close, useful, and yours.</h1>
-          <p className="hero-text">
-            ApnaPal gives you thoughtful characters for daily reflection, emotional steadiness,
-            and creative companionship.
-          </p>
-          <div className="actions">
-            <Link className="button primary" href="/characters/">
-              Meet characters
-            </Link>
-            <Link className="button secondary" href="/chat/">
-              Open chat
-            </Link>
-          </div>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "var(--color-cream)",
+        color: "var(--color-ink)",
+      }}
+    >
+      {/* Header */}
+      <header
+        style={{
+          padding: "48px 16px 24px 16px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <h1
+          className="font-fraunces"
+          style={{
+            fontSize: "var(--text-title-lg)",
+            fontWeight: 400,
+            margin: 0,
+          }}
+        >
+          ApnaPal
+        </h1>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {/* Profile button */}
+          <button
+            onClick={() => router.push("/profile")}
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              background: "transparent",
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "var(--color-ink-mid)",
+              cursor: "pointer",
+            }}
+          >
+            👤
+          </button>
+
+          {/* Notification bell placeholder */}
+          <button
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              background: "transparent",
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "var(--color-ink-mid)",
+            }}
+          >
+            🔔
+          </button>
+
+          {/* Credit pill - clickable to go to credits page */}
+          <button
+            onClick={() => router.push("/credits")}
+            style={{
+              background: "var(--color-marigold-light)",
+              border: "1px solid var(--color-marigold)",
+              borderRadius: "100px",
+              padding: "6px 12px",
+              fontSize: "var(--text-caption)",
+              fontWeight: 600,
+              color: "#7A5200",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              cursor: "pointer",
+            }}
+          >
+            <span>💰</span>
+            <span>{credits?.balance || 0}</span>
+          </button>
         </div>
-        <div className="hero-visual" aria-label="Conversation preview">
-          <div className="chat-bubble left">How are you arriving today?</div>
-          <div className="chat-bubble right">A little scattered, but ready.</div>
-          <div className="chat-bubble left">Then we begin with one honest breath.</div>
-        </div>
+      </header>
+
+      {/* Greeting */}
+      <section style={{ padding: "0 16px 32px 16px" }}>
+        <TimeGreeting />
+        <p
+          style={{
+            fontSize: "var(--text-body)",
+            color: "var(--color-ink-mid)",
+            margin: "8px 0 0 0",
+          }}
+        >
+          Choose a companion to chat with
+        </p>
       </section>
 
-      <section className="section">
-        <div className="section-heading">
-          <p className="eyebrow">Characters</p>
-          <h2>Choose the kind of presence you need.</h2>
-        </div>
-        <div className="card-grid">
-          {characters.map((character) => (
-            <article className="card" key={character.name}>
-              <h3>{character.name}</h3>
-              <p className="card-role">{character.role}</p>
-              <p>{character.note}</p>
-            </article>
+      {/* Language Filter */}
+      <section style={{ padding: "0 16px 20px 16px" }}>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          {["English", "Hindi", "Hinglish"].map((lang) => (
+            <button
+              key={lang}
+              onClick={() => handleLanguageChange(lang.toLowerCase())}
+              style={{
+                background: selectedLanguage === lang.toLowerCase() ? "var(--color-saffron)" : "var(--color-surface)",
+                color: selectedLanguage === lang.toLowerCase() ? "#FFFFFF" : "var(--color-ink-mid)",
+                border: selectedLanguage === lang.toLowerCase() ? "none" : "1px solid var(--color-ink-faint)",
+                borderRadius: "20px",
+                padding: "8px 16px",
+                fontSize: "var(--text-caption)",
+                fontWeight: 500,
+                cursor: "pointer",
+              }}
+            >
+              {lang}
+            </button>
           ))}
         </div>
       </section>
-    </main>
+
+      {/* Character Grid */}
+      <section style={{ padding: "0 16px 100px 16px" }}>
+        {loading ? (
+          <div style={{ textAlign: "center", padding: "48px 0" }}>
+            <p style={{ color: "var(--color-ink-soft)" }}>Loading companions...</p>
+          </div>
+        ) : error ? (
+          <div style={{ textAlign: "center", padding: "48px 0" }}>
+            <p style={{ color: "var(--color-rose)", marginBottom: "16px" }}>{error}</p>
+            <button
+              onClick={fetchData}
+              style={{
+                background: "var(--color-saffron)",
+                color: "#FFFFFF",
+                border: "none",
+                borderRadius: "14px",
+                padding: "12px 24px",
+                fontSize: "15px",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Try Again
+            </button>
+          </div>
+        ) : characters.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "48px 0" }}>
+            <p style={{ color: "var(--color-ink-soft)" }}>No companions found</p>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              gap: "12px",
+            }}
+          >
+            {characters.map((character) => (
+              <CharacterCard key={character.id} character={character} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Debug logout button - remove in production */}
+      <div style={{ position: "fixed", bottom: "20px", right: "20px" }}>
+        <button
+          onClick={handleLogout}
+          style={{
+            background: "var(--color-rose)",
+            color: "#FFFFFF",
+            border: "none",
+            borderRadius: "50%",
+            width: "48px",
+            height: "48px",
+            fontSize: "20px",
+            cursor: "pointer",
+          }}
+        >
+          ×
+        </button>
+      </div>
+    </div>
   );
 }

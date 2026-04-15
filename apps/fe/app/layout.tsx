@@ -1,34 +1,38 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import SiteHeader from "./components/site-header";
-import "./styles.css";
+import { Fraunces, Sora } from "next/font/google";
+import { AuthProvider } from "../components/AuthProvider";
+import "./globals.css";
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  display: "swap",
+  weight: ["400", "500", "600"],
+});
+
+const sora = Sora({
+  subsets: ["latin"],
+  variable: "--font-sora",
+  display: "swap",
+  weight: ["400", "500", "600"],
+});
 
 export const metadata: Metadata = {
-  title: {
-    default: "ApnaPal",
-    template: "%s | ApnaPal"
-  },
-  description: "AI companions for thoughtful everyday conversations.",
-  metadataBase: new URL("https://apnapal.com")
+  title: "ApnaPal",
+  description: "An AI companion app built for India.",
 };
 
 export default function RootLayout({
-  children
-}: Readonly<{
+  children,
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body>
-        <SiteHeader />
-        {children}
-        <footer className="site-footer">
-          <span>ApnaPal</span>
-          <nav aria-label="Footer navigation">
-            <Link href="/privacy/">Privacy</Link>
-            <Link href="/terms/">Terms</Link>
-          </nav>
-        </footer>
+      <body className={`${sora.className} ${fraunces.variable} antialiased`} style={{backgroundColor: "var(--color-cream)", minHeight: "100vh", margin: 0, overflowX: "hidden" }}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

@@ -31,7 +31,7 @@ export class AnthropicProvider implements LlmProvider {
                 },
                 body: JSON.stringify({
                     model: 'claude-3-haiku-20240307',
-                    max_tokens: input.maxTokens ?? 150,
+                    max_tokens: input.maxTokens ?? 550,
                     system: input.systemPrompt,
                     messages: input.messages
                 }),
@@ -48,11 +48,13 @@ export class AnthropicProvider implements LlmProvider {
         }
 
         if (!response.ok) {
+            console.log("error raw response", await response.text())
             throw new Error(await response.text());
         }
 
         const data = await response.json() as AnthropicResponse;
         const reply = data.content[0]?.text?.trim();
+        console.log("raw response", data)
 
         if (!reply) {
             throw new Error('LLM provider returned an empty response');
