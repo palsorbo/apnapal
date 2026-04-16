@@ -55,8 +55,21 @@
   min-height: 100dvh;
 }
 
+/* Dark Mode overrides */
+:root.dark {
+  --color-cream: #18120F;
+  --color-cream-dark: #231A16;
+  --color-surface: #2C1F1A;
+  --color-ink: #F5EFE9;
+  --color-ink-mid: #B8ADA6;
+  --color-ink-soft: #7A6F69;
+  --color-ink-faint: #3D3330;
+  
+  color-scheme: dark;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --color-cream: #18120F;
     --color-cream-dark: #231A16;
     --color-surface: #2C1F1A;
@@ -64,7 +77,13 @@
     --color-ink-mid: #B8ADA6;
     --color-ink-soft: #7A6F69;
     --color-ink-faint: #3D3330;
+    
+    color-scheme: dark;
   }
+}
+
+:root {
+  color-scheme: light;
 }
 
 body {

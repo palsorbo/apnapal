@@ -9,6 +9,7 @@ import { Character, Credits } from "@apnapal/types";
 import { CharacterCard } from "../../components/CharacterCard";
 import { TimeGreeting } from "../../components/TimeGreeting";
 import { Skeleton } from "../../components/Skeleton";
+import { ThemeToggle } from "../../components/ThemeToggle";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -77,8 +78,9 @@ export default function DashboardPage() {
         </h1>
 
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <ThemeToggle />
           {/* Profile button */}
-          <button
+          {/* <button
             onClick={() => router.push("/dashboard/profile")}
             style={{
               width: "40px",
@@ -94,10 +96,10 @@ export default function DashboardPage() {
             }}
           >
             👤
-          </button>
+          </button> */}
 
           {/* Notification bell placeholder */}
-          <button
+          {/* <button
             style={{
               width: "40px",
               height: "40px",
@@ -111,7 +113,7 @@ export default function DashboardPage() {
             }}
           >
             🔔
-          </button>
+          </button> */}
 
           {/* Credit pill - clickable to go to credits page */}
           <button

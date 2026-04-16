@@ -2,6 +2,7 @@
 
 import { useAuth } from "../components/AuthProvider";
 import { useRouter } from "next/navigation";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export default function LandingPage() {
   const { user, setAuthModalOpen } = useAuth();
@@ -37,21 +38,24 @@ export default function LandingPage() {
         alignItems: "center" 
       }}>
         <div className="font-fraunces" style={{ fontSize: "24px", fontWeight: 600 }}>ApnaPal</div>
-        <button 
-          onClick={handleCTA}
-          style={{
-            background: "transparent",
-            border: "1px solid var(--color-ink-faint)",
-            borderRadius: "100px",
-            padding: "8px 20px",
-            fontSize: "14px",
-            fontWeight: 500,
-            cursor: "pointer",
-            color: "var(--color-ink)",
-          }}
-        >
-          {user ? "Dashboard" : "Log In"}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <ThemeToggle />
+          <button 
+            onClick={handleCTA}
+            style={{
+              background: "transparent",
+              border: "1px solid var(--color-ink-faint)",
+              borderRadius: "100px",
+              padding: "8px 20px",
+              fontSize: "14px",
+              fontWeight: 500,
+              cursor: "pointer",
+              color: "var(--color-ink)",
+            }}
+          >
+            {user ? "Dashboard" : "Log In"}
+          </button>
+        </div>
       </nav>
 
       {/* Hero Section */}
