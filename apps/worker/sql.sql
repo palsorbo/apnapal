@@ -28,6 +28,7 @@ CREATE TABLE characters (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
     persona_type VARCHAR(50) NOT NULL, -- 'girlfriend','boyfriend','dadi','yaar','bollywood'
+    language_code VARCHAR(10) DEFAULT 'hi' NOT NULL, -- 'hi', 'bn', 'ta', 'en'
     description TEXT,
     system_prompt TEXT NOT NULL,
     avatar_url TEXT,

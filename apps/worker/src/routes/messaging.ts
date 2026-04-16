@@ -185,6 +185,10 @@ app.post('/:conversationId/messages', authMiddleware, async (c) => {
 <character_profile>
     ${conversation.characters.system_prompt}
 </character_profile>
+<language_context>
+    Primary Language Code: ${conversation.characters.language_code}
+    Respond strictly in the character's designated language/dialect (e.g., hi = Hinglish/Hindi, bn = Bengali, ta = Tamil).
+</language_context>
 <user_context>
     ${factsSection}
 </user_context>

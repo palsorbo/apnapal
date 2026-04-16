@@ -153,22 +153,29 @@ export default function DashboardPage() {
       {/* Language Filter */}
       <section style={{ padding: "0 16px 20px 16px" }}>
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-          {["English", "Hindi", "Hinglish"].map((lang) => (
+          {[
+            { label: "All", code: "" },
+            { label: "Hinglish", code: "hi" },
+            { label: "Bengali", code: "bn" },
+            { label: "Tamil", code: "ta" },
+            { label: "English", code: "en" }
+          ].map((lang) => (
             <button
-              key={lang}
-              onClick={() => handleLanguageChange(lang.toLowerCase())}
+              key={lang.label}
+              onClick={() => setSelectedLanguage(lang.code)}
               style={{
-                background: selectedLanguage === lang.toLowerCase() ? "var(--color-saffron)" : "var(--color-surface)",
-                color: selectedLanguage === lang.toLowerCase() ? "#FFFFFF" : "var(--color-ink-mid)",
-                border: selectedLanguage === lang.toLowerCase() ? "none" : "1px solid var(--color-ink-faint)",
+                background: selectedLanguage === lang.code ? "var(--color-saffron)" : "var(--color-surface)",
+                color: selectedLanguage === lang.code ? "#FFFFFF" : "var(--color-ink-mid)",
+                border: selectedLanguage === lang.code ? "none" : "1px solid var(--color-ink-faint)",
                 borderRadius: "20px",
                 padding: "8px 16px",
                 fontSize: "var(--text-caption)",
                 fontWeight: 500,
                 cursor: "pointer",
+                transition: "all 0.2s ease",
               }}
             >
-              {lang}
+              {lang.label}
             </button>
           ))}
         </div>

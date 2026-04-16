@@ -13,13 +13,13 @@ app.get('/', async (c) => {
 
         let query = supabase
             .from('characters')
-            .select('id, name, persona_type, description, avatar_url')
+            .select('id, name, persona_type, language_code, description, avatar_url')
             .eq('is_active', true)
             .order('created_at', { ascending: false });
 
-        // If language filter is provided, filter by persona_type or description
+        // If language filter is provided, filter by exact language_code
         if (lang) {
-            query = query.or(`persona_type.ilike.%${lang}%,description.ilike.%${lang}%`);
+            query = query.eq('language_code', lang);
         }
 
         const { data, error } = await query;
@@ -51,7 +51,7 @@ app.get('/:id', async (c) => {
 
         const { data, error } = await supabase
             .from('characters')
-            .select('id, name, persona_type, description, avatar_url')
+            .select('id, name, persona_type, language_code, description, avatar_url')
             .eq('id', characterId)
             .single();
 

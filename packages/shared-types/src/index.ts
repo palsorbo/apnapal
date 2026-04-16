@@ -14,6 +14,7 @@ export interface Character {
   id: string;
   name: string;
   persona_type: string;
+  language_code: string;
   description: string;
   avatar_url: string;
   voice_id?: string;
