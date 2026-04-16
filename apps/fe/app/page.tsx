@@ -8,6 +8,7 @@ import { api } from "../lib/api";
 import { Character, Credits } from "@apnapal/types";
 import { CharacterCard } from "../components/CharacterCard";
 import { TimeGreeting } from "../components/TimeGreeting";
+import { Skeleton } from "../components/Skeleton";
 
 export default function Home() {
   const router = useRouter();
@@ -49,8 +50,8 @@ export default function Home() {
 
   return (
     <div
+      className="min-h-screen-dvh"
       style={{
-        minHeight: "100vh",
         background: "var(--color-cream)",
         color: "var(--color-ink)",
       }}
@@ -176,12 +177,30 @@ export default function Home() {
       {/* Character Grid */}
       <section style={{ padding: "0 16px 100px 16px" }}>
         {loading ? (
-          <div style={{ textAlign: "center", padding: "48px 0" }}>
-            <p style={{ color: "var(--color-ink-soft)" }}>Loading companions...</p>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              gap: "12px",
+            }}
+          >
+            {[...Array(6)].map((_, i) => (
+              <div key={i} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <Skeleton height="200px" borderRadius="20px" />
+                <Skeleton width="60%" height="24px" />
+                <Skeleton width="40%" height="16px" />
+              </div>
+            ))}
           </div>
         ) : error ? (
-          <div style={{ textAlign: "center", padding: "48px 0" }}>
-            <p style={{ color: "var(--color-rose)", marginBottom: "16px" }}>{error}</p>
+          <div style={{ textAlign: "center", padding: "64px 24px" }}>
+            <div style={{ fontSize: "48px", marginBottom: "16px" }}>😕</div>
+            <h3 className="font-fraunces" style={{ fontSize: "20px", marginBottom: "8px" }}>
+              Kuch gadbad ho gayi
+            </h3>
+            <p style={{ color: "var(--color-ink-mid)", marginBottom: "24px" }}>
+              {error}
+            </p>
             <button
               onClick={fetchData}
               style={{
@@ -189,18 +208,25 @@ export default function Home() {
                 color: "#FFFFFF",
                 border: "none",
                 borderRadius: "14px",
-                padding: "12px 24px",
+                padding: "14px 32px",
                 fontSize: "15px",
                 fontWeight: 600,
                 cursor: "pointer",
+                boxShadow: "0 4px 12px rgba(232, 97, 10, 0.2)",
               }}
             >
-              Try Again
+              Phir se koshish karein
             </button>
           </div>
         ) : characters.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "48px 0" }}>
-            <p style={{ color: "var(--color-ink-soft)" }}>No companions found</p>
+          <div style={{ textAlign: "center", padding: "64px 24px" }}>
+            <div style={{ fontSize: "48px", marginBottom: "16px" }}>✨</div>
+            <h3 className="font-fraunces" style={{ fontSize: "20px", marginBottom: "8px" }}>
+              Koi mil nahi raha...
+            </h3>
+            <p style={{ color: "var(--color-ink-mid)" }}>
+              {selectedLanguage ? `"${selectedLanguage}" mein koi companion nahi mil raha. Language badal kar dekhein?` : "Abhi koi companion available nahi hai."}
+            </p>
           </div>
         ) : (
           <div

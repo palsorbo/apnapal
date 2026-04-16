@@ -158,11 +158,12 @@ app.post('/:conversationId/messages', authMiddleware, async (c) => {
         Do not include any formatting, markdown, or text outside the specified format.\n\n=== CHARACTER PROFILE ===\n${conversation.characters.system_prompt}${factsSection}\n\n=== CURRENT CONVERSATION STATE ===\n${JSON.stringify(conversation.memory || {})}
 
         You must return your response STRICTLY in the following format:
+
         REPLY:
         (Your character response to the user)
 
         STATE:
-        (A 1-2 sentence summary of the current conversation mood and topics discussed)
+        (1 word describing the current conversation mood)
         `;
 
         // console.log("fullSystemPrompt", fullSystemPrompt)
@@ -177,7 +178,7 @@ app.post('/:conversationId/messages', authMiddleware, async (c) => {
                 env,
                 systemPrompt: fullSystemPrompt,
                 messages: messagesForLlm,
-                maxTokens: 100,
+                maxTokens: 1500,
                 timeoutMs: 15000
             });
             console.log("raw resonse", rawResponse)

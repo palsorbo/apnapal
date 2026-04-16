@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "../../lib/api";
 import { Credits, CreditTransaction, RechargePlan } from "@apnapal/types";
+import { Skeleton } from "../../components/Skeleton";
 
 const PLANS: RechargePlan[] = [
   {
@@ -181,25 +182,37 @@ export default function CreditsScreen() {
   if (loading) {
     return (
       <div
+        className="min-h-screen-dvh"
         style={{
-          minHeight: "100vh",
           background: "var(--color-cream)",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          flexDirection: "column",
         }}
       >
-        <p style={{ color: "var(--color-ink-soft)" }}>Loading credits...</p>
+        <header style={{ padding: "48px 16px 24px 16px" }}>
+          <Skeleton width="40px" height="40px" borderRadius="50%" />
+        </header>
+        <main style={{ padding: "0 16px" }}>
+          <Skeleton height="160px" borderRadius="20px" style={{ marginBottom: "24px" }} />
+          <Skeleton width="140px" height="24px" style={{ marginBottom: "16px" }} />
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <Skeleton height="70px" borderRadius="14px" />
+            <Skeleton height="70px" borderRadius="14px" />
+            <Skeleton height="70px" borderRadius="14px" />
+          </div>
+        </main>
       </div>
     );
   }
 
   return (
     <div
+      className="min-h-screen-dvh"
       style={{
-        minHeight: "100vh",
         background: "var(--color-cream)",
         color: "var(--color-ink)",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {/* Header */}
@@ -330,13 +343,17 @@ export default function CreditsScreen() {
               style={{
                 background: "var(--color-surface)",
                 borderRadius: "14px",
-                padding: "24px",
+                padding: "32px 24px",
                 textAlign: "center",
                 border: "0.5px solid var(--color-ink-faint)",
               }}
             >
-              <p style={{ color: "var(--color-ink-soft)", margin: 0 }}>
-                No transactions yet
+              <div style={{ fontSize: "40px", marginBottom: "12px" }}>💳</div>
+              <p style={{ color: "var(--color-ink-mid)", fontWeight: 500, marginBottom: "4px" }}>
+                Abhi koi history nahi hai
+              </p>
+              <p style={{ color: "var(--color-ink-soft)", fontSize: "13px" }}>
+                Jab aap credits use karenge, yahan dikhayi dega.
               </p>
             </div>
           ) : (

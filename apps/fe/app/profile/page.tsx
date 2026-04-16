@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "../../lib/api";
 import { Profile as ProfileType } from "@apnapal/types";
+import { Skeleton } from "../../components/Skeleton";
 
 const LANGUAGES = [
   { value: "en", label: "English" },
@@ -78,25 +79,35 @@ export default function ProfileScreen() {
   if (loading) {
     return (
       <div
+        className="min-h-screen-dvh"
         style={{
-          minHeight: "100vh",
           background: "var(--color-cream)",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          flexDirection: "column",
         }}
       >
-        <p style={{ color: "var(--color-ink-soft)" }}>Loading profile...</p>
+        <header style={{ padding: "48px 16px 24px 16px" }}>
+          <Skeleton width="40px" height="40px" borderRadius="50%" />
+        </header>
+        <main style={{ padding: "0 16px" }}>
+          <Skeleton width="100px" height="24px" style={{ marginBottom: "12px" }} />
+          <Skeleton height="52px" borderRadius="14px" style={{ marginBottom: "24px" }} />
+          <Skeleton width="150px" height="24px" style={{ marginBottom: "12px" }} />
+          <Skeleton height="150px" borderRadius="14px" style={{ marginBottom: "32px" }} />
+          <Skeleton height="52px" borderRadius="14px" />
+        </main>
       </div>
     );
   }
 
   return (
     <div
+      className="min-h-screen-dvh"
       style={{
-        minHeight: "100vh",
         background: "var(--color-cream)",
         color: "var(--color-ink)",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {/* Header */}

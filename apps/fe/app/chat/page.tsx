@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { api } from "../../lib/api";
 import { Conversation, Message, MessagesResponse, Credits, SendMessageResponse } from "@apnapal/types";
+import { Skeleton } from "../../components/Skeleton";
 
 export default function ChatScreen() {
   const searchParams = useSearchParams();
@@ -166,15 +167,22 @@ export default function ChatScreen() {
   if (loading) {
     return (
       <div
+        className="min-h-screen-dvh"
         style={{
-          minHeight: "100vh",
           background: "var(--color-cream)",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          flexDirection: "column",
         }}
       >
-        <p style={{ color: "var(--color-ink-soft)" }}>Loading chat...</p>
+        <header style={{ padding: "16px", background: "var(--color-surface)", borderBottom: "0.5px solid var(--color-ink-faint)", display: "flex", alignItems: "center", gap: "12px" }}>
+          <Skeleton width="32px" height="32px" borderRadius="50%" />
+          <Skeleton width="40%" height="32px" />
+        </header>
+        <div style={{ flex: 1, padding: "16px", display: "flex", flexDirection: "column", gap: "16px" }}>
+          <Skeleton width="70%" height="60px" borderRadius="18px 18px 18px 4px" />
+          <Skeleton width="60%" height="40px" borderRadius="18px 4px 18px 18px" style={{ alignSelf: "flex-end" }} />
+          <Skeleton width="80%" height="80px" borderRadius="18px 18px 18px 4px" />
+        </div>
       </div>
     );
   }
@@ -182,33 +190,40 @@ export default function ChatScreen() {
   if (error || !conversation) {
     return (
       <div
+        className="min-h-screen-dvh"
         style={{
-          minHeight: "100vh",
           background: "var(--color-cream)",
           padding: "16px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
+          textAlign: "center",
         }}
       >
-        <p style={{ color: "var(--color-rose)", marginBottom: "16px" }}>
-          {error || "Chat not found"}
+        <div style={{ fontSize: "64px", marginBottom: "24px" }}>🌵</div>
+        <h2 className="font-fraunces" style={{ fontSize: "24px", marginBottom: "12px" }}>
+          Chat load nahi hua
+        </h2>
+        <p style={{ color: "var(--color-ink-mid)", marginBottom: "32px", maxWidth: "280px" }}>
+          {error || "Hamein ye chat nahi mili. Dibara try karke dekhein?"}
         </p>
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push("/")}
           style={{
             background: "var(--color-saffron)",
             color: "#FFFFFF",
             border: "none",
             borderRadius: "14px",
-            padding: "12px 24px",
+            padding: "16px 32px",
             fontSize: "15px",
             fontWeight: 600,
             cursor: "pointer",
+            width: "100%",
+            maxWidth: "240px",
           }}
         >
-          Go Back
+          Ghar Chalein (Home)
         </button>
       </div>
     );
@@ -216,11 +231,12 @@ export default function ChatScreen() {
 
   return (
     <div
+      className="h-screen-dvh"
       style={{
-        minHeight: "100vh",
         background: "var(--color-cream)",
         display: "flex",
         flexDirection: "column",
+        overflow: "hidden",
       }}
     >
       {/* Header */}
@@ -293,13 +309,19 @@ export default function ChatScreen() {
             border: "1px solid var(--color-marigold)",
             borderRadius: "100px",
             padding: "6px 12px",
-            fontSize: "var(--text-caption)",
+            fontSize: "13px",
             fontWeight: 600,
             color: "#7A5200",
             cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            boxShadow: credits && credits.balance < 10 ? "0 0 8px rgba(194, 53, 95, 0.2)" : "none",
+            borderColor: credits && credits.balance < 10 ? "var(--color-rose)" : "var(--color-marigold)",
           }}
         >
-          💰 {credits?.balance || 0}
+          <span>💰</span>
+          <span>{credits?.balance || 0}</span>
         </button>
       </header>
 
@@ -314,6 +336,18 @@ export default function ChatScreen() {
           gap: "16px",
         }}
       >
+        {messages.length === 0 && !loadingMessages && (
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "32px", opacity: 0.6 }}>
+            <div style={{ fontSize: "40px", marginBottom: "16px" }}>👋</div>
+            <p className="font-fraunces" style={{ fontSize: "18px", color: "var(--color-ink)" }}>
+              {conversation.characters.name} se baat karein!
+            </p>
+            <p style={{ fontSize: "14px", color: "var(--color-ink-mid)", marginTop: "4px" }}>
+              Kuch bhi poochhiye... "Kaisi ho?"
+            </p>
+          </div>
+        )}
+
         {messages.map((message) => (
           <div
             key={message.id}
@@ -329,39 +363,31 @@ export default function ChatScreen() {
                 src={conversation.characters.avatar_url || "/default-avatar.png"}
                 alt={conversation.characters.name}
                 style={{
-                  width: "28px",
-                  height: "28px",
+                  width: "32px",
+                  height: "32px",
                   borderRadius: "50%",
                   objectFit: "cover",
                   flexShrink: 0,
+                  border: "1.5px solid var(--color-saffron-light)",
                 }}
               />
             )}
 
             <div
+              className={message.role === 'assistant' ? "lang-hi" : ""}
               style={{
                 maxWidth: message.role === 'user' ? "78%" : "82%",
                 padding: "12px 16px",
                 borderRadius: message.role === 'user' ? "18px 4px 18px 18px" : "4px 18px 18px 18px",
                 background: message.role === 'user' ? "var(--color-saffron)" : "var(--color-surface)",
                 color: message.role === 'user' ? "#FFFFFF" : "var(--color-ink)",
-                fontSize: message.role === 'user' ? "var(--text-body)" : "var(--text-body-lg)",
+                fontSize: message.role === 'user' ? "15px" : "17px",
                 border: message.role === 'assistant' ? "0.5px solid var(--color-ink-faint)" : "none",
                 wordWrap: "break-word",
+                boxShadow: "var(--level-1-shadow)",
               }}
             >
               {message.content}
-            </div>
-
-            <div
-              style={{
-                fontSize: "var(--text-micro)",
-                color: "var(--color-ink-soft)",
-                alignSelf: "flex-end",
-                marginBottom: "4px",
-              }}
-            >
-              {formatTime(message.created_at)}
             </div>
           </div>
         ))}
@@ -429,13 +455,13 @@ export default function ChatScreen() {
             value={messageInput}
             onChange={(e) => setMessageInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Type a message..."
+            placeholder="Kuch bhi poochhiye..."
             disabled={sending}
             style={{
               flex: 1,
-              minHeight: "40px",
+              minHeight: "52px",
               maxHeight: "120px",
-              padding: "12px 16px",
+              padding: "14px 16px",
               border: "1.5px solid var(--color-ink-faint)",
               borderRadius: "20px",
               fontSize: "15px",

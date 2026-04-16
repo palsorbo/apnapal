@@ -29,7 +29,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${sora.className} ${fraunces.variable} antialiased`} style={{backgroundColor: "var(--color-cream)", minHeight: "100vh", margin: 0, overflowX: "hidden" }}>
+      <body className={`${sora.className} ${fraunces.variable} antialiased`} style={{backgroundColor: "var(--color-cream)", minHeight: "100dvh", margin: 0, overflowX: "hidden" }}>
         <AuthProvider>
           {children}
         </AuthProvider>

@@ -49,7 +49,7 @@ export default function CharacterProfile() {
     return (
       <div
         style={{
-          minHeight: "100vh",
+        minHeight: "100dvh",
           background: "var(--color-cream)",
           display: "flex",
           alignItems: "center",
@@ -65,7 +65,7 @@ export default function CharacterProfile() {
     return (
       <div
         style={{
-          minHeight: "100vh",
+        minHeight: "100dvh",
           background: "var(--color-cream)",
           padding: "16px",
           display: "flex",

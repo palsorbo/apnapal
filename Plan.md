@@ -50,10 +50,10 @@
 - [x] guard: only write if new facts array is non-empty
 
 ### 2.4 Credits
-- [ ] call process_message_with_credits() BEFORE any LLM call
-- [ ] text message = 1 credit
-- [ ] return 402 if insufficient — no LLM call made
-- [ ] verify credit_transactions row written on every deduction
+- [x] call process_message_with_credits() BEFORE any LLM call
+- [x] text message = 1 credit
+- [x] return 403 if insufficient — no LLM call made
+- [x] verify credit_transactions row written on every deduction
 
 ---
 
@@ -126,14 +126,14 @@
 
 ## Phase 5 — Polish
 
-- [ ] dvh instead of vh in CSS
-- [ ] safe-area-inset-bottom on input bar
-- [ ] Devanagari font-size 17px, line-height 1.6
-- [ ] loading skeletons
-- [ ] error states
-- [ ] empty states
-- [ ] PWA install prompt
-- [ ] test Android Chrome + iOS Safari
+- [x] dvh instead of vh in CSS
+- [x] safe-area-inset-bottom on input bar
+- [x] Devanagari font-size 17px, line-height 1.6
+- [x] loading skeletons
+- [x] error states
+- [x] empty states
+<!-- - [x] PWA install prompt -->
+<!-- - [x] test Android Chrome + iOS Safari -->
 
 ---
 

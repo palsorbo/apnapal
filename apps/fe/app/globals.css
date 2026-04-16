@@ -38,6 +38,21 @@
   --text-body: 15px;
   --text-caption: 13px;
   --text-micro: 11px;
+
+  /* Phase 5 Foundations */
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --shimmer-start: #EDE8E1;
+  --shimmer-end: #F5F0E8;
+}
+
+.h-screen-dvh {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.min-h-screen-dvh {
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -81,4 +96,37 @@ body {
 /* Utilities */
 .font-fraunces {
   font-family: 'Fraunces', Georgia, serif;
+}
+
+/* Devanagari Specifics (Phase 5) */
+.lang-hi, .lang-mr, .lang-ne {
+  font-size: 1.05em; /* Slightly larger for Devanagari legibility */
+  line-height: 1.6;
+}
+
+/* Skeleton Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.skeleton {
+  background: var(--shimmer-start);
+  background-image: linear-gradient(
+    to right,
+    var(--shimmer-start) 0%,
+    var(--shimmer-end) 20%,
+    var(--shimmer-start) 40%,
+    var(--shimmer-start) 100%
+  );
+  background-repeat: no-repeat;
+  background-size: 800px 100%;
+  display: inline-block;
+  position: relative;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 4px;
 }

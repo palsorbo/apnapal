@@ -82,7 +82,7 @@ export default function LoginScreen() {
     <div style={{
       display: "flex",
       flexDirection: "column",
-      height: "100vh",
+      height: "100dvh",
       justifyContent: "flex-end",
     }}>
       {/* Illustration Area / Top Area */}
