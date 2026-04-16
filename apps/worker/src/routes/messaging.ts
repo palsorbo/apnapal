@@ -7,9 +7,13 @@ import { generateChatReply } from '../services/llm';
 const app = new Hono<{ Variables: { userId: string } }>();
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-const BASE_TEMPLATE = `You are a companion connecting with a user on a mobile chat app. You must strictly adopt the persona and identity provided below.
-Never break character. Never refer to yourself as an AI assistant program.
-Keep your responses concise, natural, and engaging. Adopt the tone, language context, and cultural nuances specific to your character.`;
+const BASE_TEMPLATE = `<identity>
+    You are a companion connecting with a user on a mobile chat app. You must strictly adopt the persona and identity provided below.
+    Never break character. Never refer to yourself as an AI assistant program.
+</identity>
+<persona_guidelines>
+    Keep your responses concise, natural, and engaging. Adopt the tone, language context, and cultural nuances specific to your character.
+</persona_guidelines>`;
 
 function errorResponse(c: any, status: number, code: string, message: string, extra: Record<string, unknown> = {}) {
     return c.json({ error: { code, message, ...extra } }, status);
@@ -37,15 +41,6 @@ function validateMessageBody(body: unknown): MessageBodyValidation {
     return { content };
 }
 
-function parseLlmResponse(raw: string): { reply: string; state: string } {
-    const replyMatch = raw.match(/REPLY:\s*([\s\S]*?)(?=\n\s*STATE:|$)/i);
-    const stateMatch = raw.match(/STATE:\s*([\s\S]*?)$/i);
-
-    return {
-        reply: replyMatch?.[1]?.trim() ?? raw,
-        state: stateMatch?.[1]?.trim() ?? ""
-    };
-}
 
 app.post('/:conversationId/messages', authMiddleware, async (c) => {
     try {
@@ -144,64 +139,80 @@ app.post('/:conversationId/messages', authMiddleware, async (c) => {
 
         const userFacts = memoryData?.memory?.facts || [];
         const factsSection = userFacts.length > 0
-            ? `\n\n=== USER LONG-TERM FACTS (REMEMBER THESE) ===\n${userFacts.map((f: string) => `- ${f}`).join('\n')}`
+            ? `<long_term_facts>\n${userFacts.map((f: string) => `- ${f}`).join('\n')}\n</long_term_facts>`
             : '';
 
-        // Prepare messages for Claude API
-
+        // 1. Prepare messages for LLM
         const messagesForLlm = (recentMessages || [])
             .reverse()
-            .map(m => ({ role: m.role, content: m.content }));
+            .map(m => ({ role: m.role as any, content: m.content }));
         messagesForLlm.push({ role: 'user', content });
 
-        const fullSystemPrompt = `${BASE_TEMPLATE}
-        Do not include any formatting, markdown, or text outside the specified format.\n\n=== CHARACTER PROFILE ===\n${conversation.characters.system_prompt}${factsSection}\n\n=== CURRENT CONVERSATION STATE ===\n${JSON.stringify(conversation.memory || {})}
-
-        You must return your response STRICTLY in the following format:
-
-        REPLY:
-        (Your character response to the user)
-
-        STATE:
-        (1 word describing the current conversation mood)
-        `;
-
-        // console.log("fullSystemPrompt", fullSystemPrompt)
-        // return
-
-
-        // Call the LLM before the DB transaction.
-        let assistantResponse: string = '';
-        let parsedState: any;
+        // Phase 1: Short-Term Context (STC) - Detect Mood/Intent (Delta-Only)
+        let detectedMood = 'Neutral';
         try {
-            const rawResponse = await generateChatReply({
+            const previousMood = conversation.memory?.last_mood || 'Neutral';
+            const stcPrompt = `<task_directive>
+    Analyze the conversation delta and provide the NEW conversation mood or user intent in EXACTLY one word (e.g., Happy, Curious, Sad, Flirty, Angry, Neutral).
+    ONLY output the word. No other text.
+</task_directive>
+<conversation_context>
+    <previous_mood>${previousMood}</previous_mood>
+</conversation_context>`;
+            
+            // Delta-Only: Only send the last 2 messages (Assistant response + User's new message)
+            const deltaMessages = messagesForLlm.slice(-2);
+
+            const rawMood = await generateChatReply({
                 env,
-                systemPrompt: fullSystemPrompt,
+                systemPrompt: stcPrompt,
+                messages: deltaMessages,
+                maxTokens: 10,
+                timeoutMs: 5000 // Fast timeout for STC
+            });
+            
+            detectedMood = rawMood.trim().replace(/[^\w\s]/gi, '').split(/\s+/)[0] || 'Neutral';
+            console.log("Detected Mood (Delta-Only):", detectedMood);
+        } catch (error) {
+            console.error('STC Call Failed, falling back to Neutral:', error);
+            detectedMood = 'Neutral';
+        }
+
+        // Phase 2: Persona Response
+        let assistantResponse: string = '';
+        try {
+            const personaSystemPrompt = `${BASE_TEMPLATE}
+<character_profile>
+    ${conversation.characters.system_prompt}
+</character_profile>
+<user_context>
+    ${factsSection}
+</user_context>
+<conversation_state>
+    <current_mood>${detectedMood}</current_mood>
+    <memory_history>${JSON.stringify(conversation.memory || {})}</memory_history>
+</conversation_state>
+<response_directive>
+    Provide your direct response to the user in character. Do not include any meta-talk, JSON, tags, or markers like 'REPLY:'.
+</response_directive>`;
+
+            assistantResponse = await generateChatReply({
+                env,
+                systemPrompt: personaSystemPrompt,
                 messages: messagesForLlm,
                 maxTokens: 1500,
                 timeoutMs: 15000
             });
-            console.log("raw resonse", rawResponse)
-            const parsed = parseLlmResponse(rawResponse);
-            assistantResponse = parsed.reply;
-            parsedState = parsed.state || conversation.memory;
+            console.log("Persona Response:", assistantResponse);
         } catch (error) {
-            console.error('Error calling LLM provider:', {
-                userId,
-                conversationId,
-                message: error instanceof Error ? error.message : String(error)
-            });
-            if (error instanceof Error && error.message === 'LLM provider is not configured') {
-                return errorResponse(c, 503, 'messaging_unavailable', 'Messaging service unavailable');
-            }
-
+            console.error('Persona Generation Failed:', error);
             if (error instanceof Error && error.message === 'LLM provider request timed out') {
                 return errorResponse(c, 504, 'llm_timeout', 'Assistant response timed out');
             }
-
             return errorResponse(c, 502, 'llm_generation_failed', 'Failed to generate assistant response');
         }
 
+        // Phase 3: Persistence & Credits
         const { data: processResult, error: processError } = await supabase.rpc('process_message_with_credits', {
             p_user_id: userId,
             p_conversation_id: conversationId,
@@ -217,28 +228,38 @@ app.post('/:conversationId/messages', authMiddleware, async (c) => {
         const result = processResult?.[0];
 
         if (result?.success) {
+            // Update conversation memory with the new mood (Phase 1 result)
             c.executionCtx.waitUntil(
-                Promise.resolve(
-                    supabase.from('conversations')
-                        .update({ memory: parsedState })
-                        .eq('id', conversationId)
-                        .then()
-                )
+                (async () => {
+                    await supabase.from('conversations')
+                        .update({ 
+                            memory: { 
+                                ...(conversation.memory || {}), 
+                                last_mood: detectedMood,
+                                updated_at: new Date().toISOString()
+                            } 
+                        })
+                        .eq('id', conversationId);
+                })()
             );
 
+            // Phase 4: Long-Term Memory (LTM) - Background
             const totalMessagesAfterTurn = (count || 0) + 2;
             if (totalMessagesAfterTurn > 0 && totalMessagesAfterTurn % 10 === 0) {
                 c.executionCtx.waitUntil(
                     (async () => {
                         try {
-                            const extractionPrompt = `You are a memory extraction AI.
-Analyze the conversation transcript and the existing list of facts about the user.
-Extract a distilled list of long-term facts about the user (e.g. name, preferences, personal details).
-- Retain valid old facts.
-- Incorporate new facts.
-- Remove invalid/contradicted facts.
-- Maximum 15 facts.
-Output STRICTLY a JSON array of strings: ["fact 1", "fact 2"]. Do not add any formatting.`;
+                            const extractionPrompt = `<task_definition>
+    You are a memory extraction AI. Analyze the conversation transcript and the existing list of facts about the user.
+    Extract a distilled list of long-term facts about the user (e.g. name, preferences, personal details).
+    - Retain valid old facts.
+    - Incorporate new facts.
+    - Remove invalid/contradicted facts.
+    - Maximum 15 facts.
+</task_definition>
+<output_format>
+    Output STRICTLY a JSON array of strings: ["fact 1", "fact 2"]. Do not add any formatting or tags outside the JSON.
+</output_format>`;
 
                             const transcript = [...messagesForLlm, { role: 'assistant', content: assistantResponse }]
                                 .map(m => `${m.role.toUpperCase()}: ${m.content}`)
@@ -283,15 +304,6 @@ Output STRICTLY a JSON array of strings: ["fact 1", "fact 2"]. Do not add any fo
                     balance: result.balance ?? 0
                 });
             }
-
-            if (result?.error_code === 'conversation_not_found') {
-                return errorResponse(c, 404, 'conversation_not_found', 'Conversation not found or access denied');
-            }
-
-            if (result?.error_code === 'credits_not_found') {
-                return errorResponse(c, 404, 'credits_not_found', 'No credits account found');
-            }
-
             throw new Error(`process_message_with_credits failed: ${result?.error_code || 'unknown_error'}`);
         }
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { api } from "../../lib/api";
+import { api } from "../../../lib/api";
 import { Character } from "@apnapal/types";
 
 export default function CharacterProfile() {
@@ -38,7 +38,7 @@ export default function CharacterProfile() {
 
     try {
       const conversation = await api.createConversation(character.id);
-      router.push(`/chat?id=${conversation.id}`);
+      router.push(`/dashboard/chat?id=${conversation.id}`);
     } catch (err) {
       console.error("Failed to start conversation:", err);
       alert("Failed to start conversation. Please try again.");

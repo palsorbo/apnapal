@@ -11,7 +11,7 @@ export function CharacterCard({ character }: CharacterCardProps) {
   const router = useRouter();
 
   const handleClick = () => {
-    router.push(`/character?id=${character.id}`);
+    router.push(`/dashboard/character?id=${character.id}`);
   };
 
   return (

@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { api } from "../../lib/api";
+import { api } from "../../../lib/api";
 import { Conversation, Message, MessagesResponse, Credits, SendMessageResponse } from "@apnapal/types";
-import { Skeleton } from "../../components/Skeleton";
+import { Skeleton } from "../../../components/Skeleton";
 
 export default function ChatScreen() {
   const searchParams = useSearchParams();
@@ -209,7 +209,7 @@ export default function ChatScreen() {
           {error || "Hamein ye chat nahi mili. Dibara try karke dekhein?"}
         </p>
         <button
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/dashboard")}
           style={{
             background: "var(--color-saffron)",
             color: "#FFFFFF",
@@ -303,7 +303,7 @@ export default function ChatScreen() {
 
         {/* Credit balance */}
         <button
-          onClick={() => router.push("/credits")}
+          onClick={() => router.push("/dashboard/credits")}
           style={{
             background: "var(--color-marigold-light)",
             border: "1px solid var(--color-marigold)",
@@ -618,7 +618,7 @@ export default function ChatScreen() {
                   <button
                     onClick={() => {
                       setShowRechargeSheet(false);
-                      router.push("/credits");
+                      router.push("/dashboard/credits");
                     }}
                     style={{
                       width: "100%",

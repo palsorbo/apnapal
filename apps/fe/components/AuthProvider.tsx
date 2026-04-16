@@ -3,18 +3,21 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { User, Session } from "@supabase/supabase-js";
-import { useRouter, usePathname } from "next/navigation";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
+  isAuthModalOpen: boolean;
+  setAuthModalOpen: (open: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   isLoading: true,
+  isAuthModalOpen: false,
+  setAuthModalOpen: () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -23,8 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
-  const pathname = usePathname();
+  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -36,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(session);
           setUser(session?.user ?? null);
           
-          // Minimum 1.5s visual splash for polish if we want, but removing for pure speed is fine too.
+          // Minimum 1.5s visual splash for polish
           setTimeout(() => {
              setIsLoading(false);
           }, 1500);
@@ -56,6 +58,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
+        
+        // Close modal if user is now authenticated
+        if (session?.user) {
+          setAuthModalOpen(false);
+        }
       }
     );
 
@@ -64,16 +71,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
-
-  useEffect(() => {
-    if (!isLoading) {
-      if (!user && pathname !== "/login") {
-        router.push("/login");
-      } else if (user && pathname === "/login") {
-        router.push("/");
-      }
-    }
-  }, [user, isLoading, pathname, router]);
 
   if (isLoading) {
     return (
@@ -92,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, isLoading }}>
+    <AuthContext.Provider value={{ user, session, isLoading, isAuthModalOpen, setAuthModalOpen }}>
       {children}
     </AuthContext.Provider>
   );

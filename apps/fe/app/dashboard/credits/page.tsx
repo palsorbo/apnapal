@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "../../lib/api";
+import { api } from "../../../lib/api";
 import { Credits, CreditTransaction, RechargePlan } from "@apnapal/types";
-import { Skeleton } from "../../components/Skeleton";
+import { Skeleton } from "../../../components/Skeleton";
 
 const PLANS: RechargePlan[] = [
   {

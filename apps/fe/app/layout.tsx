@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Sora } from "next/font/google";
 import { AuthProvider } from "../components/AuthProvider";
+import { AuthModal } from "../components/AuthModal";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -18,8 +19,8 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: "ApnaPal",
-  description: "An AI companion app built for India.",
+  title: "ApnaPal | Your AI Companion",
+  description: "Experience the next generation of AI companions built for India.",
 };
 
 export default function RootLayout({
@@ -32,6 +33,7 @@ export default function RootLayout({
       <body className={`${sora.className} ${fraunces.variable} antialiased`} style={{backgroundColor: "var(--color-cream)", minHeight: "100dvh", margin: 0, overflowX: "hidden" }}>
         <AuthProvider>
           {children}
+          <AuthModal />
         </AuthProvider>
       </body>
     </html>
