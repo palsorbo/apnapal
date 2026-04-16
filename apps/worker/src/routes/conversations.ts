@@ -54,6 +54,47 @@ app.get('/', authMiddleware, async (c) => {
     }
 });
 
+// GET /conversations/:id - Get single conversation details
+app.get('/:id', authMiddleware, async (c) => {
+    try {
+        const env = c.env as Env;
+        const userId = c.get('userId');
+        const conversationId = c.req.param('id');
+        const supabase = getSupabaseClient(env);
+
+        if (!conversationId || !uuidRegex.test(conversationId)) {
+            return c.json({ error: 'Invalid conversation ID format' }, 400);
+        }
+
+        const { data, error } = await supabase
+            .from('conversations')
+            .select(`
+                *,
+                characters (
+                    id,
+                    name,
+                    avatar_url,
+                    persona_type
+                )
+            `)
+            .eq('id', conversationId)
+            .eq('user_id', userId)
+            .single();
+
+        if (error) {
+            if (error.code === 'PGRST116') {
+                return c.json({ error: 'Conversation not found' }, 404);
+            }
+            throw error;
+        }
+
+        return c.json(data);
+    } catch (error: any) {
+        console.error('Error fetching conversation:', error);
+        return c.json({ error: 'Failed to fetch conversation', details: error.message }, 500);
+    }
+});
+
 // POST /conversations - Start new conversation or return existing
 app.post('/', authMiddleware, async (c) => {
     try {

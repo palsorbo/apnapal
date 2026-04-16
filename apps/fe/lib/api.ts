@@ -106,6 +106,10 @@ export const api = {
     const query = limit ? `?limit=${limit}` : '';
     return apiRequest(`/conversations${query}`);
   },
+  
+  getConversation: (id: string): Promise<Conversation> => {
+    return apiRequest(`/conversations/${id}`);
+  },
 
   // Add more API methods as needed
 };

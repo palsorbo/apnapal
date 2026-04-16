@@ -27,13 +27,23 @@ export default function ChatScreen() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Scroll to bottom when new messages arrive
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, typing]);
+  // Scroll behavior state
+  const isFirstScroll = useRef(true);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Scroll to bottom when new messages arrive or loading finishes
+  useEffect(() => {
+    if (!loading) {
+      scrollToBottom(isFirstScroll.current ? "auto" : "smooth");
+      if (messages.length > 0) {
+        isFirstScroll.current = false;
+      }
+    }
+  }, [messages, typing, loading]);
+
+  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior });
+    }
   };
 
   // Load conversation and initial data
@@ -49,8 +59,7 @@ export default function ChatScreen() {
       setError(null);
 
       // Load conversation with character details
-      const conversations = await api.getConversations?.() || [];
-      const conv = conversations.find(c => c.id === conversationId);
+      const conv = await api.getConversation(conversationId!);
 
       if (!conv) {
         setError("Conversation not found");
@@ -268,7 +277,10 @@ export default function ChatScreen() {
             ←
           </button>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div
+            onClick={() => router.push(`/dashboard/character?id=${conversation.characters.id}`)}
+            style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}
+          >
             <img
               src={conversation.characters.avatar_url || "/default-avatar.png"}
               alt={conversation.characters.name}
@@ -360,6 +372,7 @@ export default function ChatScreen() {
           >
             {message.role === 'assistant' && (
               <img
+                onClick={() => router.push(`/dashboard/character?id=${conversation.characters.id}`)}
                 src={conversation.characters.avatar_url || "/default-avatar.png"}
                 alt={conversation.characters.name}
                 style={{
@@ -369,6 +382,7 @@ export default function ChatScreen() {
                   objectFit: "cover",
                   flexShrink: 0,
                   border: "1.5px solid var(--color-saffron-light)",
+                  cursor: "pointer",
                 }}
               />
             )}
@@ -402,6 +416,7 @@ export default function ChatScreen() {
             }}
           >
             <img
+              onClick={() => router.push(`/dashboard/character?id=${conversation.characters.id}`)}
               src={conversation.characters.avatar_url || "/default-avatar.png"}
               alt={conversation.characters.name}
               style={{
@@ -410,6 +425,7 @@ export default function ChatScreen() {
                 borderRadius: "50%",
                 objectFit: "cover",
                 flexShrink: 0,
+                cursor: "pointer",
               }}
             />
 

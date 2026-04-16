@@ -157,7 +157,7 @@ export default function DashboardPage() {
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
           {[
             { label: "All", code: "" },
-            { label: "Hinglish", code: "hi" },
+            { label: "Hindi", code: "hi" },
             { label: "Bengali", code: "bn" },
             { label: "Tamil", code: "ta" },
             { label: "English", code: "en" }

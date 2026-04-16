@@ -1,7 +1,7 @@
-"use client";
-
+import { useState } from "react";
 import { Character } from "@apnapal/types";
 import { useRouter } from "next/navigation";
+import { api } from "../lib/api";
 
 interface CharacterCardProps {
   character: Character;
@@ -9,9 +9,22 @@ interface CharacterCardProps {
 
 export function CharacterCard({ character }: CharacterCardProps) {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
-  const handleClick = () => {
-    router.push(`/dashboard/character?id=${character.id}`);
+  const handleClick = async () => {
+    if (loading) return;
+    
+    try {
+      setLoading(true);
+      const conversation = await api.createConversation(character.id);
+      router.push(`/dashboard/chat?id=${conversation.id}`);
+    } catch (err) {
+      console.error("Failed to start conversation:", err);
+      // Fallback: if we can't create/get conversation, go to profile
+      router.push(`/dashboard/character?id=${character.id}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -22,12 +35,14 @@ export function CharacterCard({ character }: CharacterCardProps) {
         borderRadius: "20px",
         border: "0.5px solid var(--color-ink-faint)",
         overflow: "hidden",
-        cursor: "pointer",
+        cursor: loading ? "wait" : "pointer",
         position: "relative",
         boxShadow: "var(--level-1-shadow)",
         display: "flex",
         flexDirection: "column",
         height: "100%",
+        opacity: loading ? 0.7 : 1,
+        transition: "opacity 0.2s ease",
       }}
     >
       {/* Image area */}
@@ -50,6 +65,28 @@ export function CharacterCard({ character }: CharacterCardProps) {
             }}
           />
         )}
+        
+        {/* Loading overlay */}
+        {loading && (
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(255, 255, 255, 0.4)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backdropFilter: "blur(2px)",
+              zIndex: 2,
+            }}
+          >
+            <div style={{ fontSize: "24px" }} className="animate-pulse">✨</div>
+          </div>
+        )}
+
         {/* Online indicator overlay */}
         <div
           style={{
@@ -132,8 +169,7 @@ export function CharacterCard({ character }: CharacterCardProps) {
             overflow: "hidden",
           }}
         >
-          {/* {character.bio || "Tap to start chatting..."} */}
-          {"Tap to start chatting..."}
+          {loading ? "Starting chat..." : "Tap to start chatting..."}
         </p>
       </div>
     </div>
