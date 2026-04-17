@@ -21,6 +21,12 @@ const sora = Sora({
 export const metadata: Metadata = {
   title: "ApnaPal | Your AI Companion",
   description: "Experience the next generation of AI companions built for India.",
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 import { ThemeProvider } from "../components/ThemeProvider";
