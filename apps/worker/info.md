@@ -71,7 +71,6 @@ List all active characters with optional language filter.
     "avatar_url": "https://...",
     "is_active": true,
     "version": 1,
-    "voice_id": "voice-uuid",
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-01T00:00:00Z"
   }
@@ -92,7 +91,6 @@ Get details of a specific character.
   "avatar_url": "https://...",
   "is_active": true,
   "version": 1,
-  "voice_id": "voice-uuid",
   "created_at": "2024-01-01T00:00:00Z",
   "updated_at": "2024-01-01T00:00:00Z"
 }

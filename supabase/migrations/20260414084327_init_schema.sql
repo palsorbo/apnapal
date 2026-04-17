@@ -28,12 +28,12 @@ CREATE TABLE characters (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
     persona_type VARCHAR(50) NOT NULL, -- 'girlfriend','boyfriend','dadi','yaar','bollywood'
+    language_code VARCHAR(10) DEFAULT 'hi' NOT NULL, -- 'hi', 'bn', 'ta', 'en'
     description TEXT,
     system_prompt TEXT NOT NULL,
     avatar_url TEXT,
     is_active BOOLEAN DEFAULT TRUE,
     version INT DEFAULT 1, --but is there backward compability (can note manual v1)
-    voice_id VARCHAR(100),  -- need to think as there are various players
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -62,7 +62,7 @@ CREATE TABLE messages (
 );
 
 CREATE INDEX idx_messages_conv_time
-ON messages(conversation_id, created_at DESC);
+ON messages(conversation_id, created_at DESC, id DESC);
 
 -- ============================================================
 -- MEMORY (per user per character)
@@ -255,8 +255,8 @@ BEGIN
     VALUES (p_conversation_id, 'user', p_message_type, p_user_content)
     RETURNING id, created_at INTO v_user_message_id, v_user_message_created_at;
 
-    INSERT INTO public.messages (conversation_id, role, type, content)
-    VALUES (p_conversation_id, 'assistant', p_message_type, p_assistant_content)
+    INSERT INTO public.messages (conversation_id, role, type, content, created_at)
+    VALUES (p_conversation_id, 'assistant', p_message_type, p_assistant_content, v_user_message_created_at + interval '1 millisecond')
     RETURNING id, created_at INTO v_assistant_message_id, v_assistant_message_created_at;
 
     INSERT INTO public.credit_transactions (user_id, amount, type, reference_id)

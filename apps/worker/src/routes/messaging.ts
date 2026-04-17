@@ -119,6 +119,7 @@ app.post('/:conversationId/messages', authMiddleware, async (c) => {
             .select('role, content', { count: 'exact' })
             .eq('conversation_id', conversationId)
             .order('created_at', { ascending: false })
+            .order('id', { ascending: false })
             .limit(10);
 
         if (recentMessagesError) {

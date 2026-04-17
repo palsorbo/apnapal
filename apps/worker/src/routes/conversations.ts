@@ -273,6 +273,7 @@ app.get('/:conversationId/messages', authMiddleware, async (c) => {
             .select('*')
             .eq('conversation_id', conversationId)
             .order('created_at', { ascending: false })
+            .order('id', { ascending: false })
             .limit(limit);
 
         // If cursor is provided, fetch messages before that timestamp
@@ -291,9 +292,12 @@ app.get('/:conversationId/messages', authMiddleware, async (c) => {
         }
 
         // Return messages in chronological order (oldest first)
-        const messages = (data || []).sort((a, b) =>
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        );
+        // Using id as tie-breaker for stable sorting when timestamps are identical
+        const messages = (data || []).sort((a, b) => {
+            const timeDiff = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+            if (timeDiff !== 0) return timeDiff;
+            return a.id.localeCompare(b.id);
+        });
 
         // Provide next cursor for pagination
         const nextCursor = messages.length > 0
