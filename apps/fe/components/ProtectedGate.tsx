@@ -17,23 +17,16 @@ export function ProtectedGate({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "20px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Skeleton width="120px" height="32px" />
-          <div style={{ display: "flex", gap: "12px" }}>
-            <Skeleton width="40px" height="40px" borderRadius="50%" />
-            <Skeleton width="40px" height="40px" borderRadius="50%" />
-            <Skeleton width="80px" height="32px" borderRadius="100px" />
-          </div>
-        </div>
-        <Skeleton width="200px" height="40px" />
-        <Skeleton width="150px" height="20px" />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "24px" }}>
-          <Skeleton height="200px" borderRadius="20px" />
-          <Skeleton height="200px" borderRadius="20px" />
-          <Skeleton height="200px" borderRadius="20px" />
-          <Skeleton height="200px" borderRadius="20px" />
-        </div>
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100vh",
+        backgroundColor: "var(--color-cream)",
+        color: "var(--color-ink)",
+      }}>
+        <h1 className="font-fraunces" style={{ fontSize: "var(--text-display)", fontWeight: 400 }}>ApnaPal</h1>
       </div>
     );
   }

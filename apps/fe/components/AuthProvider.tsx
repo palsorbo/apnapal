@@ -72,22 +72,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  if (isLoading) {
-    return (
-      <div style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "100vh",
-        backgroundColor: "var(--color-cream)",
-        color: "var(--color-ink)",
-      }}>
-        <h1 className="font-fraunces" style={{ fontSize: "var(--text-display)", fontWeight: 400 }}>ApnaPal</h1>
-      </div>
-    );
-  }
-
   return (
     <AuthContext.Provider value={{ user, session, isLoading, isAuthModalOpen, setAuthModalOpen }}>
       {children}

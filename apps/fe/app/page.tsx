@@ -1,21 +1,6 @@
-"use client";
-
-import { useAuth } from "../components/AuthProvider";
-import { useRouter } from "next/navigation";
-import { ThemeToggle } from "../components/ThemeToggle";
+import { LandingCTA } from "../components/LandingCTA";
 
 export default function LandingPage() {
-  const { user, setAuthModalOpen } = useAuth();
-  const router = useRouter();
-
-  const handleCTA = () => {
-    if (user) {
-      router.push("/dashboard");
-    } else {
-      setAuthModalOpen(true);
-    }
-  };
-
   return (
     <div 
       style={{ 
@@ -38,24 +23,7 @@ export default function LandingPage() {
         alignItems: "center" 
       }}>
         <div className="font-fraunces" style={{ fontSize: "24px", fontWeight: 600 }}>ApnaPal</div>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <ThemeToggle />
-          <button 
-            onClick={handleCTA}
-            style={{
-              background: "transparent",
-              border: "1px solid var(--color-ink-faint)",
-              borderRadius: "100px",
-              padding: "8px 20px",
-              fontSize: "14px",
-              fontWeight: 500,
-              cursor: "pointer",
-              color: "var(--color-ink)",
-            }}
-          >
-            {user ? "Dashboard" : "Log In"}
-          </button>
-        </div>
+        <LandingCTA variant="nav" />
       </nav>
 
       {/* Hero Section */}
@@ -91,24 +59,7 @@ export default function LandingPage() {
           Empathetic AI companions built for India. Multilingual, culturally aware, and always ready to listen.
         </p>
 
-        <div style={{ display: "flex", gap: "16px" }}>
-          <button 
-            onClick={handleCTA}
-            style={{
-              background: "var(--color-saffron)",
-              color: "#FFFFFF",
-              border: "none",
-              borderRadius: "100px",
-              padding: "16px 40px",
-              fontSize: "18px",
-              fontWeight: 600,
-              cursor: "pointer",
-              boxShadow: "0 4px 20px rgba(232, 97, 10, 0.2)"
-            }}
-          >
-            {user ? "Back to Dashboard" : "Get Started Now"}
-          </button>
-        </div>
+        <LandingCTA variant="hero" />
 
         {/* Features Preview */}
         <div style={{ 
